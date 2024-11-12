@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .chat-container {
+            width: 400px;
+            margin: 50px auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: white;
+            padding: 10px;
+        }
+
+        .chat-window {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .input-field {
+            width: 70%;
+            padding: 10px;
+        }
+
+        .send-button {
+            padding: 10px;
+        }
+
+        .chat-window div {
+            margin: 5px 0;
+        }
+
+        .emotion-label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div id="chat-window" class="chat-window"></div>
+        <div id="emotion-label" class="emotion-label">Emotion State: </div> <!-- Default Emotion State -->
+        <input type="text" id="user-input" class="input-field" placeholder="Type your message...">
+        <button id="send-button" class="send-button">Send</button>
+    </div>
+
+    <script>
+        document.getElementById('send-button').addEventListener('click', function() {
+            const userInput = document.getElementById('user-input').value;
+            if (userInput.trim() === "") return; // Avoid sending empty messages
+
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.innerHTML += `<div>You: ${userInput}</div>`;
+            document.getElementById('user-input').value = ''; // Clear input field
+
+            fetch('/conversation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const botMessage = data.response;
+                const detectedEmotion = data.emotion; // Get the detected emotion
+                chatWindow.innerHTML += `<div>Bot: ${botMessage}</div>`;
+
+                // Update emotion label text based on detected emotion
+                const emotionLabel = document.getElementById('emotion-label');
+                if (detectedEmotion === "Positive") {
+                    emotionLabel.innerText = "Emotion State: Happy";
+                } else if (detectedEmotion === "Negative") {
+                    emotionLabel.innerText = "Emotion State: Sad";
+                } else {
+                    emotionLabel.innerText = "Emotion State: Neutral"; // For Neutral
+                }
+
+                chatWindow.scrollTop = chatWindow.scrollHeight; // Scroll to the bottom
+            })
+            .catch(error => {
+                chatWindow.innerHTML += `<div>Bot: Error communicating with the server.</div>`;
+            });
+        });
+    </script>
+</body>
+</html>
