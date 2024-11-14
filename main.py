@@ -7,21 +7,30 @@ import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer  
 from transformers import BlenderbotTokenizer, BlenderbotForConditionalGeneration  
 from transformers import AutoModelForCausalLM, AutoTokenizer
-app = Flask(__name__)  
+app = Flask(__name__)
 
-tokenizer = BlenderbotTokenizer.from_pretrained("facebook/blenderbot-400M-distill")
-model = BlenderbotForConditionalGeneration.from_pretrained("facebook/blenderbot-400M-distill")
-
+tokenizer = AutoTokenizer.from_pretrained("LAION/OpenAssistant")
+model = AutoModelForCausalLM.from_pretrained("LAION/OpenAssistant")
+#
+# tokenizer = BlenderbotTokenizer.from_pretrained("facebook/blenderbot-400M-distill")
+# model = BlenderbotForConditionalGeneration.from_pretrained("facebook/blenderbot-400M-distill")
+#
 # tokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-small")
 # model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-small")
 
-nltk.download('vader_lexicon')  
+nltk.download('vader_lexicon')
 
-def generate_response(user_input):  
-    inputs = tokenizer(user_input, return_tensors='pt')  
-    response_id = model.generate(**inputs)  
-    response = tokenizer.batch_decode(response_id, skip_special_tokens=True)[0]  
+def generate_response(user_input):
+    inputs = tokenizer(user_input, return_tensors='pt', padding=True)
+    response_ids = model.generate(**inputs, max_length=150, num_return_sequences=1)
+    response = tokenizer.decode(response_ids[0], skip_special_tokens=True)
     return response
+
+# def generate_response(user_input):
+#     inputs = tokenizer(user_input, return_tensors='pt')
+#     response_id = model.generate(**inputs)
+#     response = tokenizer.batch_decode(response_id, skip_special_tokens=True)[0]
+#     return response
 
 def run_app():
     app.run(debug=True, use_reloader=False)
