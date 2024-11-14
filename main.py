@@ -7,10 +7,14 @@ import nltk
 from nltk.sentiment import SentimentIntensityAnalyzer  
 from transformers import BlenderbotTokenizer, BlenderbotForConditionalGeneration  
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+
+
+
 app = Flask(__name__)
 
-tokenizer = AutoTokenizer.from_pretrained("LAION/OpenAssistant")
-model = AutoModelForCausalLM.from_pretrained("LAION/OpenAssistant")
+tokenizer = AutoTokenizer.from_pretrained("OpenAssistant/oasst-sft-1-pythia-12b")
+model = AutoModelForCausalLM.from_pretrained("OpenAssistant/oasst-sft-1-pythia-12b")
 #
 # tokenizer = BlenderbotTokenizer.from_pretrained("facebook/blenderbot-400M-distill")
 # model = BlenderbotForConditionalGeneration.from_pretrained("facebook/blenderbot-400M-distill")
@@ -21,9 +25,9 @@ model = AutoModelForCausalLM.from_pretrained("LAION/OpenAssistant")
 nltk.download('vader_lexicon')
 
 def generate_response(user_input):
-    inputs = tokenizer(user_input, return_tensors='pt', padding=True)
-    response_ids = model.generate(**inputs, max_length=150, num_return_sequences=1)
-    response = tokenizer.decode(response_ids[0], skip_special_tokens=True)
+    inputs = tokenizer(user_input, return_tensors='pt')
+    response_id = model.generate(**inputs)
+    response = tokenizer.decode(response_id[0], skip_special_tokens=True)
     return response
 
 # def generate_response(user_input):
